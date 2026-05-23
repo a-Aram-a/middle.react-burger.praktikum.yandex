@@ -1,5 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -7,7 +7,7 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { API_BASE_URL } from '@utils/constants';
+import { getIngredients } from '@utils/api';
 
 import type { TIngredient } from '@utils/types';
 
@@ -22,20 +22,10 @@ export const App = (): React.JSX.Element => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`${API_BASE_URL}/ingredients`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then((data: { data: TIngredient[] }) => {
-        setIngredients(data.data);
-      })
-      .catch(() => {
-        setHasError(true);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    getIngredients()
+      .then(setIngredients)
+      .catch(() => setHasError(true))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const bun = useMemo(
@@ -60,6 +50,10 @@ export const App = (): React.JSX.Element => {
     () => (bun?.price ?? 0) * 2 + fillings.reduce((s, i) => s + i.price, 0),
     [bun, fillings]
   );
+
+  const handleOpenOrderModal = useCallback(() => setIsOrderModalOpen(true), []);
+  const handleCloseOrderModal = useCallback(() => setIsOrderModalOpen(false), []);
+  const handleCloseIngredientModal = useCallback(() => setSelectedIngredient(null), []);
 
   if (isLoading) return <Preloader />;
 
@@ -87,17 +81,17 @@ export const App = (): React.JSX.Element => {
           bun={bun}
           fillings={fillings}
           totalPrice={totalPrice}
-          onOrderClick={() => setIsOrderModalOpen(true)}
+          onOrderClick={handleOpenOrderModal}
         />
       </main>
 
       {selectedIngredient && (
-        <Modal title="Детали ингредиента" onClose={() => setSelectedIngredient(null)}>
+        <Modal title="Детали ингредиента" onClose={handleCloseIngredientModal}>
           <IngredientDetails ingredient={selectedIngredient} />
         </Modal>
       )}
       {isOrderModalOpen && (
-        <Modal onClose={() => setIsOrderModalOpen(false)}>
+        <Modal onClose={handleCloseOrderModal}>
           <OrderDetails />
         </Modal>
       )}
