@@ -34,6 +34,6 @@ export const Modal = ({ title, onClose, children }: TModalProps): React.JSX.Elem
         {children}
       </div>
     </>,
-    document.body
+    document.getElementById('modals')!
   );
 };
