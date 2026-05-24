@@ -25,14 +25,12 @@
 
 Для создания коммита рекомендуется запускать команду `npm run commit`. Она позволяет обеспечить соответствие описаний коммитов [общепринятым соглашениям](https://www.conventionalcommits.org/en/v1.0.0/).
 
-В проекте настроены алиасы, которые можно использовать при импорте модулей:
+В проекте настроены алиасы (через `vite-tsconfig-paths`), которые можно использовать при импорте модулей:
 
-```
-	alias: {
-		'@': path.resolve(__dirname, './src'),
-		'@components': path.resolve(__dirname, './src/components'),
-		'@services': path.resolve(__dirname, './src/utils'),
-		'@pages': path.resolve(__dirname, './src/pages'),
-		'@utils': path.resolve(__dirname, './src/utils'),
-	},
-```
+| Алиас | Путь |
+|---|---|
+| `@/*` | `src/*` |
+| `@components/*` | `src/components/*` |
+| `@services/*` | `src/services/*` |
+| `@store/*` | `src/services/*` |
+| `@utils/*` | `src/utils/*` |
