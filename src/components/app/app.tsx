@@ -1,5 +1,9 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@store/index';
+import { clearSelectedIngredient } from '@store/ingredient-details-slice';
+import { fetchIngredients } from '@store/ingredients-slice';
+import { resetOrder } from '@store/order-slice';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -7,57 +11,33 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { getIngredients } from '@utils/api';
-
-import type { TIngredient } from '@utils/types';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
-  const [ingredients, setIngredients] = useState<TIngredient[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [selectedIngredient, setSelectedIngredient] = useState<TIngredient | null>(null);
+  const dispatch = useAppDispatch();
+  const { status } = useAppSelector((s) => s.ingredients);
+  const selectedIngredient = useAppSelector((s) => s.ingredientDetails.ingredient);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    getIngredients()
-      .then(setIngredients)
-      .catch(() => setHasError(true))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  const bun = useMemo(
-    () => ingredients.find((i) => i.type === 'bun') ?? null,
-    [ingredients]
-  );
-  const fillings = useMemo(
-    () => ingredients.filter((i) => i.type !== 'bun').slice(0, 5),
-    [ingredients]
-  );
-
-  const ingredientCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    if (bun) counts[bun._id] = 2;
-    fillings.forEach((i) => {
-      counts[i._id] = (counts[i._id] ?? 0) + 1;
-    });
-    return counts;
-  }, [bun, fillings]);
-
-  const totalPrice = useMemo(
-    () => (bun?.price ?? 0) * 2 + fillings.reduce((s, i) => s + i.price, 0),
-    [bun, fillings]
-  );
+    void dispatch(fetchIngredients());
+  }, [dispatch]);
 
   const handleOpenOrderModal = useCallback(() => setIsOrderModalOpen(true), []);
-  const handleCloseOrderModal = useCallback(() => setIsOrderModalOpen(false), []);
-  const handleCloseIngredientModal = useCallback(() => setSelectedIngredient(null), []);
 
-  if (isLoading) return <Preloader />;
+  const handleCloseOrderModal = useCallback(() => {
+    setIsOrderModalOpen(false);
+    dispatch(resetOrder());
+  }, [dispatch]);
 
-  if (hasError) {
+  const handleCloseIngredientModal = useCallback(() => {
+    dispatch(clearSelectedIngredient());
+  }, [dispatch]);
+
+  if (status === 'loading' || status === 'idle') return <Preloader />;
+
+  if (status === 'failed') {
     return (
       <p className="text text_type_main-medium mt-10" style={{ textAlign: 'center' }}>
         Произошла ошибка при загрузке данных. Попробуйте обновить страницу.
@@ -72,17 +52,8 @@ export const App = (): React.JSX.Element => {
         Соберите бургер
       </h1>
       <main className={`${styles.main} pl-5 pr-5`}>
-        <BurgerIngredients
-          ingredients={ingredients}
-          ingredientCounts={ingredientCounts}
-          onIngredientClick={setSelectedIngredient}
-        />
-        <BurgerConstructor
-          bun={bun}
-          fillings={fillings}
-          totalPrice={totalPrice}
-          onOrderClick={handleOpenOrderModal}
-        />
+        <BurgerIngredients />
+        <BurgerConstructor onOrderClick={handleOpenOrderModal} />
       </main>
 
       {selectedIngredient && (

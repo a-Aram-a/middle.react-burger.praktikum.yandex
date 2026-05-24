@@ -7,12 +7,22 @@
 }
 
 .fillings {
-  flex-grow: 1;
   min-height: 80px;
+  max-height: 400px;
   margin: 0;
   padding: 4px 0;
   overflow-y: auto;
   list-style: none;
+}
+
+.spacer {
+  flex-grow: 1;
+  min-height: 8px;
+}
+
+.drop_active {
+  border-radius: 88px;
+  outline: 2px dashed var(--colors-interface-accent);
 }
 
 .filling_item {
@@ -35,4 +45,25 @@
 .total {
   display: flex;
   align-items: center;
+}
+
+.placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 64px;
+  background: #1c1c21;
+  border: 2px dashed #3c3c4e;
+  border-radius: 88px;
+}
+
+.placeholder_item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 64px;
+  list-style: none;
+  background: #1c1c21;
+  border: 2px dashed #3c3c4e;
+  border-radius: 88px;
 }
