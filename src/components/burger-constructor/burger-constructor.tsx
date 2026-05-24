@@ -129,8 +129,6 @@ export const BurgerConstructor = ({
         )}
       </div>
 
-      <div className={styles.spacer} />
-
       <div className={`${styles.footer} mt-10 mr-4`}>
         <div className={`${styles.total} mr-10`}>
           <span className="text text_type_digits-medium mr-2">{totalPrice}</span>
