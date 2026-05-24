@@ -13,8 +13,8 @@ const initialState: TConstructorState = {
   ingredients: [],
 };
 
-const constructorSlice = createSlice({
-  name: 'constructor',
+export const constructorSlice = createSlice({
+  name: 'burgerConstructor',
   initialState,
   reducers: {
     addIngredient: {
@@ -45,14 +45,13 @@ const constructorSlice = createSlice({
 
 export const { addIngredient, removeIngredient, moveIngredient } =
   constructorSlice.actions;
-export const constructorReducer = constructorSlice.reducer;
 
-const selectConstructor = (state: {
+const selectConstructorState = (state: {
   burgerConstructor: TConstructorState;
 }): TConstructorState => state.burgerConstructor;
 
 export const selectIngredientCounts = createSelector(
-  selectConstructor,
+  selectConstructorState,
   ({ bun, ingredients }) => {
     const counts: Record<string, number> = {};
     if (bun) counts[bun._id] = 2;
@@ -64,7 +63,7 @@ export const selectIngredientCounts = createSelector(
 );
 
 export const selectTotalPrice = createSelector(
-  selectConstructor,
+  selectConstructorState,
   ({ bun, ingredients }) =>
     (bun?.price ?? 0) * 2 + ingredients.reduce((s, i) => s + i.price, 0)
 );

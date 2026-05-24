@@ -1,8 +1,8 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
 import { useAppDispatch, useAppSelector } from '@store/index';
-import { clearSelectedIngredient } from '@store/ingredient-details-slice';
-import { fetchIngredients } from '@store/ingredients-slice';
-import { resetOrder } from '@store/order-slice';
+import { clearSelectedIngredient } from '@store/ingredient-details/ingredientDetailsSlice';
+import { fetchIngredients } from '@store/ingredients/ingredientsActions';
+import { resetOrder } from '@store/order/orderSlice';
 import { useCallback, useEffect, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';

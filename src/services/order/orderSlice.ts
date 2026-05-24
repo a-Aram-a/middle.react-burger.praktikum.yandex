@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { createOrder } from '@utils/api';
+import { placeOrder } from './orderActions';
 
 type TOrderState = {
   number: number | null;
@@ -12,9 +12,7 @@ const initialState: TOrderState = {
   status: 'idle',
 };
 
-export const placeOrder = createAsyncThunk('order/place', createOrder);
-
-const orderSlice = createSlice({
+export const orderSlice = createSlice({
   name: 'order',
   initialState,
   reducers: {
@@ -40,4 +38,3 @@ const orderSlice = createSlice({
 });
 
 export const { resetOrder } = orderSlice.actions;
-export const orderReducer = orderSlice.reducer;

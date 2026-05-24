@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { getIngredients } from '@utils/api';
+import { fetchIngredients } from './ingredientsActions';
 
 import type { TIngredient } from '@utils/types';
 
@@ -14,9 +14,7 @@ const initialState: TIngredientsState = {
   status: 'idle',
 };
 
-export const fetchIngredients = createAsyncThunk('ingredients/fetch', getIngredients);
-
-const ingredientsSlice = createSlice({
+export const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,
   reducers: {},
@@ -34,5 +32,3 @@ const ingredientsSlice = createSlice({
       });
   },
 });
-
-export const ingredientsReducer = ingredientsSlice.reducer;

@@ -3,9 +3,9 @@ import {
   ConstructorElement,
   CurrencyIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { addIngredient, selectTotalPrice } from '@store/constructor-slice';
+import { addIngredient, selectTotalPrice } from '@store/constructor/constructorSlice';
 import { useAppDispatch, useAppSelector } from '@store/index';
-import { placeOrder } from '@store/order-slice';
+import { placeOrder } from '@store/order/orderActions';
 import { useDrop } from 'react-dnd';
 
 import { DragTypes } from '@utils/constants';

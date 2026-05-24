@@ -11,7 +11,7 @@ const initialState: TIngredientDetailsState = {
   ingredient: null,
 };
 
-const ingredientDetailsSlice = createSlice({
+export const ingredientDetailsSlice = createSlice({
   name: 'ingredientDetails',
   initialState,
   reducers: {
@@ -26,4 +26,3 @@ const ingredientDetailsSlice = createSlice({
 
 export const { setSelectedIngredient, clearSelectedIngredient } =
   ingredientDetailsSlice.actions;
-export const ingredientDetailsReducer = ingredientDetailsSlice.reducer;

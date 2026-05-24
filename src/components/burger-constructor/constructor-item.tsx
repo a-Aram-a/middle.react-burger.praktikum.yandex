@@ -2,7 +2,7 @@ import {
   ConstructorElement,
   DragIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { moveIngredient, removeIngredient } from '@store/constructor-slice';
+import { moveIngredient, removeIngredient } from '@store/constructor/constructorSlice';
 import { useAppDispatch } from '@store/index';
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';

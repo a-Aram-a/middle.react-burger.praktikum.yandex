@@ -1,7 +1,7 @@
 import { Counter, CurrencyIcon } from '@krgaa/react-developer-burger-ui-components';
-import { selectIngredientCounts } from '@store/constructor-slice';
+import { selectIngredientCounts } from '@store/constructor/constructorSlice';
 import { useAppDispatch, useAppSelector } from '@store/index';
-import { setSelectedIngredient } from '@store/ingredient-details-slice';
+import { setSelectedIngredient } from '@store/ingredient-details/ingredientDetailsSlice';
 import { useDrag } from 'react-dnd';
 
 import { DragTypes } from '@utils/constants';
