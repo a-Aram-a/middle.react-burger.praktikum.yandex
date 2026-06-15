@@ -1,23 +1,18 @@
-import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
+import { Tab } from '@krgaa/react-developer-burger-ui-components';
+import { useAppSelector } from '@store/index';
 import { useRef, useState } from 'react';
+
+import { IngredientCard } from './ingredient-card';
 
 import type { TIngredient } from '@utils/types';
 
 import styles from './burger-ingredients.module.css';
 
-type TBurgerIngredientsProps = {
-  ingredients: TIngredient[];
-  ingredientCounts: Record<string, number>;
-  onIngredientClick: (ingredient: TIngredient) => void;
-};
-
-export const BurgerIngredients = ({
-  ingredients,
-  ingredientCounts,
-  onIngredientClick,
-}: TBurgerIngredientsProps): React.JSX.Element => {
+export const BurgerIngredients = (): React.JSX.Element => {
+  const ingredients = useAppSelector((s) => s.ingredients.items);
   const [currentTab, setCurrentTab] = useState('bun');
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bunsRef = useRef<HTMLHeadingElement>(null);
   const saucesRef = useRef<HTMLHeadingElement>(null);
   const mainsRef = useRef<HTMLHeadingElement>(null);
@@ -32,32 +27,28 @@ export const BurgerIngredients = ({
     refs[value]?.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const buns = ingredients.filter((i) => i.type === 'bun');
-  const sauces = ingredients.filter((i) => i.type === 'sauce');
-  const mains = ingredients.filter((i) => i.type === 'main');
-
-  const renderCard = (ingredient: TIngredient): React.JSX.Element => {
-    const count = ingredientCounts[ingredient._id] ?? 0;
-    return (
-      <li
-        key={ingredient._id}
-        className={styles.card}
-        onClick={() => onIngredientClick(ingredient)}
-      >
-        <div className={styles.image_wrapper}>
-          <img className={styles.image} src={ingredient.image} alt={ingredient.name} />
-          {count > 0 && (
-            <Counter count={count} size="default" extraClass={styles.counter} />
-          )}
-        </div>
-        <div className={`${styles.price} mt-1 mb-1`}>
-          <span className="text text_type_digits-default mr-2">{ingredient.price}</span>
-          <CurrencyIcon type="primary" />
-        </div>
-        <p className={`${styles.name} text text_type_main-default`}>{ingredient.name}</p>
-      </li>
-    );
+  const handleScroll = (): void => {
+    const containerTop = scrollAreaRef.current?.getBoundingClientRect().top ?? 0;
+    const sections: { value: string; ref: React.RefObject<HTMLHeadingElement> }[] = [
+      { value: 'bun', ref: bunsRef },
+      { value: 'sauce', ref: saucesRef },
+      { value: 'main', ref: mainsRef },
+    ];
+    const closest = sections.reduce((prev, curr) => {
+      const prevDist = Math.abs(
+        (prev.ref.current?.getBoundingClientRect().top ?? Infinity) - containerTop
+      );
+      const currDist = Math.abs(
+        (curr.ref.current?.getBoundingClientRect().top ?? Infinity) - containerTop
+      );
+      return currDist < prevDist ? curr : prev;
+    });
+    setCurrentTab(closest.value);
   };
+
+  const buns = ingredients.filter((i: TIngredient) => i.type === 'bun');
+  const sauces = ingredients.filter((i: TIngredient) => i.type === 'sauce');
+  const mains = ingredients.filter((i: TIngredient) => i.type === 'main');
 
   const renderGroup = (
     title: string,
@@ -68,7 +59,11 @@ export const BurgerIngredients = ({
       <h2 ref={ref} className="text text_type_main-medium mb-6">
         {title}
       </h2>
-      <ul className={styles.grid}>{items.map(renderCard)}</ul>
+      <ul className={styles.grid}>
+        {items.map((ingredient) => (
+          <IngredientCard key={ingredient._id} ingredient={ingredient} />
+        ))}
+      </ul>
     </section>
   );
 
@@ -87,7 +82,11 @@ export const BurgerIngredients = ({
           </Tab>
         </ul>
       </nav>
-      <div className={`${styles.scroll_area} custom-scroll`}>
+      <div
+        ref={scrollAreaRef}
+        className={`${styles.scroll_area} custom-scroll`}
+        onScroll={handleScroll}
+      >
         {renderGroup('Булки', buns, bunsRef)}
         {renderGroup('Соусы', sauces, saucesRef)}
         {renderGroup('Начинки', mains, mainsRef)}
