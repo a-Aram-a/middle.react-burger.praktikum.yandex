@@ -1,4 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
+import { clearConstructor } from '@store/constructor/constructorSlice';
 import { useAppDispatch, useAppSelector } from '@store/index';
 import { clearSelectedIngredient } from '@store/ingredient-details/ingredientDetailsSlice';
 import { fetchIngredients } from '@store/ingredients/ingredientsActions';
@@ -29,6 +30,7 @@ export const App = (): React.JSX.Element => {
   const handleCloseOrderModal = useCallback(() => {
     setIsOrderModalOpen(false);
     dispatch(resetOrder());
+    dispatch(clearConstructor());
   }, [dispatch]);
 
   const handleCloseIngredientModal = useCallback(() => {
