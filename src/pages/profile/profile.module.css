@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  padding-top: 120px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+}
+
+.menu_link {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hint {
+  max-width: 320px;
+}

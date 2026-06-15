@@ -14,3 +14,25 @@ export type TIngredient = {
 };
 
 export type TConstructorIngredient = TIngredient & { uid: string };
+
+export type TUser = {
+  email: string;
+  name: string;
+};
+
+export type TRegisterForm = {
+  email: string;
+  password: string;
+  name: string;
+};
+
+export type TLoginForm = {
+  email: string;
+  password: string;
+};
+
+export type TUpdateUserForm = {
+  name: string;
+  email: string;
+  password: string;
+};

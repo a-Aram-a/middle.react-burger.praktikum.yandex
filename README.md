@@ -31,6 +31,8 @@
 |---|---|
 | `@/*` | `src/*` |
 | `@components/*` | `src/components/*` |
+| `@hooks/*` | `src/hooks/*` |
+| `@pages/*` | `src/pages/*` |
 | `@services/*` | `src/services/*` |
 | `@store/*` | `src/services/*` |
 | `@utils/*` | `src/utils/*` |
