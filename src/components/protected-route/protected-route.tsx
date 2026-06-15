@@ -7,7 +7,7 @@ type TProtectedRouteProps = {
   component: React.JSX.Element;
 };
 
-const Protected = ({
+const ProtectedRoute = ({
   onlyUnAuth = false,
   component,
 }: TProtectedRouteProps): React.JSX.Element => {
@@ -31,10 +31,10 @@ const Protected = ({
   return component;
 };
 
-export const OnlyAuth = Protected;
+export const OnlyAuth = ProtectedRoute;
 
 export const OnlyUnAuth = ({
   component,
 }: {
   component: React.JSX.Element;
-}): React.JSX.Element => <Protected onlyUnAuth component={component} />;
+}): React.JSX.Element => <ProtectedRoute onlyUnAuth component={component} />;
