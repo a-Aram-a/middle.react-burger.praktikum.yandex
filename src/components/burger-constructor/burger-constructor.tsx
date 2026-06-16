@@ -7,6 +7,7 @@ import { addIngredient, selectTotalPrice } from '@store/constructor/constructorS
 import { useAppDispatch, useAppSelector } from '@store/index';
 import { placeOrder } from '@store/order/orderActions';
 import { useDrop } from 'react-dnd';
+import { useNavigate } from 'react-router-dom';
 
 import { DragTypes } from '@utils/constants';
 
@@ -24,6 +25,8 @@ export const BurgerConstructor = ({
   onOrderClick,
 }: TBurgerConstructorProps): React.JSX.Element => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const user = useAppSelector((s) => s.auth.user);
   const bun = useAppSelector((s) => s.burgerConstructor.bun);
   const ingredients = useAppSelector((s) => s.burgerConstructor.ingredients);
   const totalPrice = useAppSelector(selectTotalPrice);
@@ -63,6 +66,10 @@ export const BurgerConstructor = ({
 
   const handleOrderClick = (): void => {
     if (!bun) return;
+    if (!user) {
+      void navigate('/login');
+      return;
+    }
     const ids = [bun._id, ...ingredients.map((i) => i._id), bun._id];
     void dispatch(placeOrder(ids));
     onOrderClick();

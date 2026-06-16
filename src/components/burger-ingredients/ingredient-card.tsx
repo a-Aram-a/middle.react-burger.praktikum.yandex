@@ -1,8 +1,8 @@
 import { Counter, CurrencyIcon } from '@krgaa/react-developer-burger-ui-components';
 import { selectIngredientCounts } from '@store/constructor/constructorSlice';
-import { useAppDispatch, useAppSelector } from '@store/index';
-import { setSelectedIngredient } from '@store/ingredient-details/ingredientDetailsSlice';
+import { useAppSelector } from '@store/index';
 import { useDrag } from 'react-dnd';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { DragTypes } from '@utils/constants';
 
@@ -17,7 +17,8 @@ type TIngredientCardProps = {
 export const IngredientCard = ({
   ingredient,
 }: TIngredientCardProps): React.JSX.Element => {
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const counts = useAppSelector(selectIngredientCounts);
   const count = counts[ingredient._id] ?? 0;
 
@@ -27,12 +28,18 @@ export const IngredientCard = ({
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   });
 
+  const handleClick = (): void => {
+    void navigate(`/ingredients/${ingredient._id}`, {
+      state: { background: location },
+    });
+  };
+
   return (
     <li
       ref={drag}
       className={styles.card}
       style={{ opacity: isDragging ? 0.5 : 1 }}
-      onClick={() => dispatch(setSelectedIngredient(ingredient))}
+      onClick={handleClick}
     >
       <div className={styles.image_wrapper}>
         <img className={styles.image} src={ingredient.image} alt={ingredient.name} />
