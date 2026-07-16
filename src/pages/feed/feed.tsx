@@ -23,7 +23,7 @@ export const FeedPage = (): React.JSX.Element => {
   if (!hasLoaded || !ingredientsLoaded) {
     return (
       <div className={styles.container}>
-        <h1 className={`${styles.title} text text_type_main-large mt-10 mb-5`}>
+        <h1 className={`${styles.title} text text_type_main-large mt-10 mb-5 pl-5`}>
           Лента заказов
         </h1>
         <div className={styles.state}>
@@ -46,7 +46,7 @@ export const FeedPage = (): React.JSX.Element => {
 
   return (
     <div className={styles.container}>
-      <h1 className={`${styles.title} text text_type_main-large mt-10 mb-5`}>
+      <h1 className={`${styles.title} text text_type_main-large mt-10 mb-5 pl-5`}>
         Лента заказов
       </h1>
       <main className={styles.main}>
