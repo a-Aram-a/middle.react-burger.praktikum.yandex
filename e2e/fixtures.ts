@@ -1,89 +1,40 @@
 import type { Page } from '@playwright/test';
 
+// Ответы API лежат в HAR-файлах; здесь — только те поля, которые проверяют тесты.
 export const BUN = {
-  _id: '643d69a5c3f7b9001cfa093c',
+  id: '643d69a5c3f7b9001cfa093c',
   name: 'Краторная булка N-200i',
-  type: 'bun',
-  proteins: 80,
-  fat: 24,
-  carbohydrates: 53,
-  calories: 420,
   price: 1255,
-  image: 'https://code.s3.yandex.net/react/code/bun-02.png',
-  image_large: 'https://code.s3.yandex.net/react/code/bun-02-large.png',
-  image_mobile: 'https://code.s3.yandex.net/react/code/bun-02-mobile.png',
-  __v: 0,
 };
-
 export const ANOTHER_BUN = {
-  _id: '643d69a5c3f7b9001cfa093d',
+  id: '643d69a5c3f7b9001cfa093d',
   name: 'Флюоресцентная булка R2-D3',
-  type: 'bun',
-  proteins: 44,
-  fat: 26,
-  carbohydrates: 85,
-  calories: 643,
   price: 988,
-  image: 'https://code.s3.yandex.net/react/code/bun-01.png',
-  image_large: 'https://code.s3.yandex.net/react/code/bun-01-large.png',
-  image_mobile: 'https://code.s3.yandex.net/react/code/bun-01-mobile.png',
-  __v: 0,
 };
-
-export const SAUCE = {
-  _id: '643d69a5c3f7b9001cfa0942',
-  name: 'Соус Spicy-X',
-  type: 'sauce',
-  proteins: 30,
-  fat: 20,
-  carbohydrates: 40,
-  calories: 30,
-  price: 90,
-  image: 'https://code.s3.yandex.net/react/code/sauce-02.png',
-  image_large: 'https://code.s3.yandex.net/react/code/sauce-02-large.png',
-  image_mobile: 'https://code.s3.yandex.net/react/code/sauce-02-mobile.png',
-  __v: 0,
-};
-
+export const SAUCE = { id: '643d69a5c3f7b9001cfa0942', name: 'Соус Spicy-X', price: 90 };
 export const MAIN = {
-  _id: '643d69a5c3f7b9001cfa0941',
+  id: '643d69a5c3f7b9001cfa0941',
   name: 'Биокотлета из марсианской Магнолии',
-  type: 'main',
-  proteins: 420,
-  fat: 142,
-  carbohydrates: 242,
-  calories: 4242,
   price: 424,
-  image: 'https://code.s3.yandex.net/react/code/meat-01.png',
-  image_large: 'https://code.s3.yandex.net/react/code/meat-01-large.png',
-  image_mobile: 'https://code.s3.yandex.net/react/code/meat-01-mobile.png',
-  __v: 0,
+  calories: 4242,
+  proteins: 420,
 };
-
-export const INGREDIENTS = [BUN, ANOTHER_BUN, SAUCE, MAIN];
-
-export const USER = { email: 'stellar@burger.space', name: 'Космонавт' };
 
 export const ORDER_NUMBER = 54321;
 
+const API_GLOB = '**/api/**';
+const ORDERS_GLOB = '**/api/orders';
+
 export const mockApi = async (page: Page): Promise<void> => {
-  await page.route('**/api/ingredients', (route) =>
-    route.fulfill({ json: { success: true, data: INGREDIENTS } })
-  );
+  await page.routeFromHAR('e2e/har/api.har', { url: API_GLOB, notFound: 'abort' });
+};
 
-  await page.route('**/api/auth/user', (route) =>
-    route.fulfill({ json: { success: true, user: USER } })
-  );
-
-  await page.route('**/api/orders', (route) =>
-    route.fulfill({
-      json: {
-        success: true,
-        name: 'Краторный бургер',
-        order: { number: ORDER_NUMBER },
-      },
-    })
-  );
+// Регистрируется после mockApi, поэтому перекрывает успешный ответ на POST /orders.
+export const mockOrderError = async (page: Page): Promise<void> => {
+  await page.routeFromHAR('e2e/har/api-order-error.har', {
+    url: ORDERS_GLOB,
+    notFound: 'abort',
+  });
 };
 
 export const authenticate = async (page: Page): Promise<void> => {

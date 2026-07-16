@@ -8,6 +8,7 @@ import {
   SAUCE,
   authenticate,
   mockApi,
+  mockOrderError,
 } from './fixtures';
 
 import type { Locator, Page } from '@playwright/test';
@@ -18,17 +19,26 @@ const ingredientCard = (page: Page, id: string): Locator =>
 const ingredientCounter = (page: Page, id: string): Locator =>
   page.getByTestId(`counter-${id}`);
 
+const bunTop = (page: Page): Locator => page.getByTestId('constructor-bun-top');
+const bunBottom = (page: Page): Locator => page.getByTestId('constructor-bun-bottom');
+const fillingsZone = (page: Page): Locator => page.getByTestId('constructor-fillings');
+const fillings = (page: Page): Locator => page.getByTestId('constructor-filling');
+const totalPrice = (page: Page): Locator => page.getByTestId('total-price');
+const modal = (page: Page): Locator => page.getByTestId('modal');
+const orderButton = (page: Page): Locator =>
+  page.getByRole('button', { name: 'Оформить заказ' });
+
 const dragToConstructor = async (
   page: Page,
   id: string,
-  target: string
+  target: Locator
 ): Promise<void> => {
-  await ingredientCard(page, id).dragTo(page.getByTestId(target));
+  await ingredientCard(page, id).dragTo(target);
 };
 
 const assembleBurger = async (page: Page): Promise<void> => {
-  await dragToConstructor(page, BUN._id, 'constructor-bun-top');
-  await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
+  await dragToConstructor(page, BUN.id, bunTop(page));
+  await dragToConstructor(page, SAUCE.id, fillingsZone(page));
 };
 
 test.beforeEach(async ({ page }) => {
@@ -40,137 +50,124 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Конструктор — перетаскивание ингредиентов', () => {
   test('пустой конструктор показывает подсказки', async ({ page }) => {
-    await expect(page.getByTestId('constructor-bun-top')).toContainText(
-      'Выберите булки'
-    );
-    await expect(page.getByTestId('constructor-bun-bottom')).toContainText(
-      'Выберите булки'
-    );
-    await expect(page.getByTestId('constructor-fillings')).toContainText(
-      'Выберите начинку'
-    );
-    await expect(page.getByTestId('total-price')).toHaveText('0');
+    await expect(bunTop(page)).toContainText('Выберите булки');
+    await expect(bunBottom(page)).toContainText('Выберите булки');
+    await expect(fillingsZone(page)).toContainText('Выберите начинку');
+    await expect(totalPrice(page)).toHaveText('0');
   });
 
   test('булка занимает верх и низ конструктора', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-bun-top');
+    await dragToConstructor(page, BUN.id, bunTop(page));
 
-    await expect(page.getByTestId('constructor-bun-top')).toContainText(
-      `${BUN.name} (верх)`
-    );
-    await expect(page.getByTestId('constructor-bun-bottom')).toContainText(
-      `${BUN.name} (низ)`
-    );
+    await expect(bunTop(page)).toContainText(`${BUN.name} (верх)`);
+    await expect(bunBottom(page)).toContainText(`${BUN.name} (низ)`);
   });
 
   test('счётчик булки показывает 2, а цена удваивается', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-bun-top');
+    await dragToConstructor(page, BUN.id, bunTop(page));
 
-    await expect(ingredientCounter(page, BUN._id)).toHaveText('2');
-    await expect(page.getByTestId('total-price')).toHaveText(String(BUN.price * 2));
+    await expect(ingredientCounter(page, BUN.id)).toHaveText('2');
+    await expect(totalPrice(page)).toHaveText(String(BUN.price * 2));
   });
 
   test('новая булка заменяет предыдущую', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-bun-top');
-    await dragToConstructor(page, ANOTHER_BUN._id, 'constructor-bun-top');
+    await dragToConstructor(page, BUN.id, bunTop(page));
+    await dragToConstructor(page, ANOTHER_BUN.id, bunTop(page));
 
-    await expect(page.getByTestId('constructor-bun-top')).toContainText(
-      `${ANOTHER_BUN.name} (верх)`
-    );
-    await expect(ingredientCounter(page, BUN._id)).toBeHidden();
-    await expect(ingredientCounter(page, ANOTHER_BUN._id)).toHaveText('2');
-    await expect(page.getByTestId('total-price')).toHaveText(
-      String(ANOTHER_BUN.price * 2)
-    );
+    await expect(bunTop(page)).toContainText(`${ANOTHER_BUN.name} (верх)`);
+    await expect(ingredientCounter(page, BUN.id)).toBeHidden();
+    await expect(ingredientCounter(page, ANOTHER_BUN.id)).toHaveText('2');
+    await expect(totalPrice(page)).toHaveText(String(ANOTHER_BUN.price * 2));
   });
 
   test('начинки добавляются в середину и суммируются в цене', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-bun-top');
-    await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
-    await dragToConstructor(page, MAIN._id, 'constructor-fillings');
+    await dragToConstructor(page, BUN.id, bunTop(page));
+    await dragToConstructor(page, SAUCE.id, fillingsZone(page));
+    await dragToConstructor(page, MAIN.id, fillingsZone(page));
 
-    const fillings = page.getByTestId('constructor-filling');
+    const items = fillings(page);
 
-    await expect(fillings).toHaveCount(2);
-    await expect(fillings.nth(0)).toContainText(SAUCE.name);
-    await expect(fillings.nth(1)).toContainText(MAIN.name);
-    await expect(page.getByTestId('total-price')).toHaveText(
+    await expect(items).toHaveCount(2);
+    await expect(items.nth(0)).toContainText(SAUCE.name);
+    await expect(items.nth(1)).toContainText(MAIN.name);
+    await expect(totalPrice(page)).toHaveText(
       String(BUN.price * 2 + SAUCE.price + MAIN.price)
     );
   });
 
   test('булку нельзя бросить в зону начинок', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-fillings');
+    await dragToConstructor(page, BUN.id, fillingsZone(page));
 
-    await expect(page.getByTestId('constructor-filling')).toHaveCount(0);
-    await expect(page.getByTestId('constructor-fillings')).toContainText(
-      'Выберите начинку'
-    );
+    await expect(fillings(page)).toHaveCount(0);
+    await expect(fillingsZone(page)).toContainText('Выберите начинку');
   });
 
   test('одинаковые начинки считаются счётчиком', async ({ page }) => {
-    await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
-    await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
+    await dragToConstructor(page, SAUCE.id, fillingsZone(page));
+    await dragToConstructor(page, SAUCE.id, fillingsZone(page));
 
-    await expect(page.getByTestId('constructor-filling')).toHaveCount(2);
-    await expect(ingredientCounter(page, SAUCE._id)).toHaveText('2');
+    await expect(fillings(page)).toHaveCount(2);
+    await expect(ingredientCounter(page, SAUCE.id)).toHaveText('2');
   });
 
   test('начинку можно удалить из конструктора', async ({ page }) => {
-    await dragToConstructor(page, BUN._id, 'constructor-bun-top');
-    await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
+    await dragToConstructor(page, BUN.id, bunTop(page));
+    await dragToConstructor(page, SAUCE.id, fillingsZone(page));
 
-    await page
-      .getByTestId('constructor-filling')
-      .locator('.constructor-element__action')
-      .click();
+    await fillings(page).locator('.constructor-element__action').click();
 
-    await expect(page.getByTestId('constructor-filling')).toHaveCount(0);
-    await expect(ingredientCounter(page, SAUCE._id)).toBeHidden();
-    await expect(page.getByTestId('total-price')).toHaveText(String(BUN.price * 2));
+    await expect(fillings(page)).toHaveCount(0);
+    await expect(ingredientCounter(page, SAUCE.id)).toBeHidden();
+    await expect(totalPrice(page)).toHaveText(String(BUN.price * 2));
   });
 });
 
 test.describe('Конструктор — модальное окно ингредиента', () => {
   test('клик по ингредиенту открывает модалку с деталями', async ({ page }) => {
-    await ingredientCard(page, MAIN._id).click();
+    await ingredientCard(page, MAIN.id).click();
 
-    const modal = page.getByTestId('modal');
+    const details = modal(page);
 
-    await expect(modal).toBeVisible();
-    await expect(modal).toContainText('Детали ингредиента');
-    await expect(modal).toContainText(MAIN.name);
-    await expect(modal).toContainText(String(MAIN.calories));
-    await expect(modal).toContainText(String(MAIN.proteins));
-    await expect(page).toHaveURL(`/ingredients/${MAIN._id}`);
+    await expect(details).toBeVisible();
+    await expect(details).toContainText('Детали ингредиента');
+    await expect(details).toContainText(MAIN.name);
+    await expect(details).toContainText(String(MAIN.calories));
+    await expect(details).toContainText(String(MAIN.proteins));
+    await expect(page).toHaveURL(`/ingredients/${MAIN.id}`);
   });
 
   test('модалка закрывается по клику на крестик', async ({ page }) => {
-    await ingredientCard(page, MAIN._id).click();
-    await expect(page.getByTestId('modal')).toBeVisible();
+    const details = modal(page);
+
+    await ingredientCard(page, MAIN.id).click();
+    await expect(details).toBeVisible();
 
     await page.getByTestId('modal-close').click();
 
-    await expect(page.getByTestId('modal')).toBeHidden();
+    await expect(details).toBeHidden();
     await expect(page).toHaveURL('/');
   });
 
   test('модалка закрывается по клику на оверлей', async ({ page }) => {
-    await ingredientCard(page, MAIN._id).click();
-    await expect(page.getByTestId('modal')).toBeVisible();
+    const details = modal(page);
+
+    await ingredientCard(page, MAIN.id).click();
+    await expect(details).toBeVisible();
 
     await page.getByTestId('modal-overlay').click({ position: { x: 10, y: 10 } });
 
-    await expect(page.getByTestId('modal')).toBeHidden();
+    await expect(details).toBeHidden();
   });
 
   test('модалка закрывается по Escape', async ({ page }) => {
-    await ingredientCard(page, MAIN._id).click();
-    await expect(page.getByTestId('modal')).toBeVisible();
+    const details = modal(page);
+
+    await ingredientCard(page, MAIN.id).click();
+    await expect(details).toBeVisible();
 
     await page.keyboard.press('Escape');
 
-    await expect(page.getByTestId('modal')).toBeHidden();
+    await expect(details).toBeHidden();
   });
 });
 
@@ -184,55 +181,49 @@ test.describe('Конструктор — оформление заказа', ()
       page.waitForRequest(
         (r) => r.url().endsWith('/api/orders') && r.method() === 'POST'
       ),
-      page.getByRole('button', { name: 'Оформить заказ' }).click(),
+      orderButton(page).click(),
     ]);
 
     expect(request.postDataJSON()).toEqual({
-      ingredients: [BUN._id, SAUCE._id, BUN._id],
+      ingredients: [BUN.id, SAUCE.id, BUN.id],
     });
 
-    const modal = page.getByTestId('modal');
+    const details = modal(page);
 
-    await expect(modal).toBeVisible();
+    await expect(details).toBeVisible();
     await expect(page.getByTestId('order-number')).toHaveText(String(ORDER_NUMBER));
-    await expect(modal).toContainText('идентификатор заказа');
-    await expect(modal).toContainText('Ваш заказ начали готовить');
+    await expect(details).toContainText('идентификатор заказа');
+    await expect(details).toContainText('Ваш заказ начали готовить');
   });
 
   test('закрытие модалки заказа очищает конструктор', async ({ page }) => {
     await assembleBurger(page);
-    await page.getByRole('button', { name: 'Оформить заказ' }).click();
+    await orderButton(page).click();
     await expect(page.getByTestId('order-number')).toHaveText(String(ORDER_NUMBER));
 
     await page.getByTestId('modal-close').click();
 
-    await expect(page.getByTestId('modal')).toBeHidden();
-    await expect(page.getByTestId('constructor-bun-top')).toContainText(
-      'Выберите булки'
-    );
-    await expect(page.getByTestId('constructor-fillings')).toContainText(
-      'Выберите начинку'
-    );
-    await expect(page.getByTestId('total-price')).toHaveText('0');
+    await expect(modal(page)).toBeHidden();
+    await expect(bunTop(page)).toContainText('Выберите булки');
+    await expect(fillingsZone(page)).toContainText('Выберите начинку');
+    await expect(totalPrice(page)).toHaveText('0');
   });
 
   test('бургер без булки не оформляется', async ({ page }) => {
-    await dragToConstructor(page, SAUCE._id, 'constructor-fillings');
+    await dragToConstructor(page, SAUCE.id, fillingsZone(page));
 
-    await page.getByRole('button', { name: 'Оформить заказ' }).click();
+    await orderButton(page).click();
 
-    await expect(page.getByTestId('modal')).toBeHidden();
+    await expect(modal(page)).toBeHidden();
     await expect(page).toHaveURL('/');
   });
 
   test('ошибка сервера показывается в модалке заказа', async ({ page }) => {
-    await page.route('**/api/orders', (route) =>
-      route.fulfill({ status: 500, json: { success: false, message: 'Ошибка сервера' } })
-    );
+    await mockOrderError(page);
     await assembleBurger(page);
 
-    await page.getByRole('button', { name: 'Оформить заказ' }).click();
+    await orderButton(page).click();
 
-    await expect(page.getByTestId('modal')).toContainText('Ошибка при создании заказа');
+    await expect(modal(page)).toContainText('Ошибка при создании заказа');
   });
 });
