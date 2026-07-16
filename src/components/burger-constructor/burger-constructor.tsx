@@ -80,6 +80,7 @@ export const BurgerConstructor = ({
       <div
         ref={bunTopDrop}
         className={`ml-8 mb-4 ${isBunTopOver ? styles.drop_active : ''}`}
+        data-testid="constructor-bun-top"
       >
         {bun ? (
           <ConstructorElement
@@ -101,6 +102,7 @@ export const BurgerConstructor = ({
       <ul
         ref={fillingsDrop}
         className={`${styles.fillings} custom-scroll ${isFillingsOver ? styles.drop_active : ''}`}
+        data-testid="constructor-fillings"
       >
         {ingredients.length > 0 ? (
           ingredients.map((item, index) => (
@@ -118,6 +120,7 @@ export const BurgerConstructor = ({
       <div
         ref={bunBottomDrop}
         className={`ml-8 mt-4 ${isBunBottomOver ? styles.drop_active : ''}`}
+        data-testid="constructor-bun-bottom"
       >
         {bun ? (
           <ConstructorElement
@@ -138,7 +141,9 @@ export const BurgerConstructor = ({
 
       <div className={`${styles.footer} mt-10 mr-4`}>
         <div className={`${styles.total} mr-10`}>
-          <span className="text text_type_digits-medium mr-2">{totalPrice}</span>
+          <span className="text text_type_digits-medium mr-2" data-testid="total-price">
+            {totalPrice}
+          </span>
           <CurrencyIcon type="primary" />
         </div>
         <Button htmlType="button" type="primary" size="large" onClick={handleOrderClick}>

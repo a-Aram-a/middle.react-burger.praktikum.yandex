@@ -18,6 +18,7 @@
 }
 
 .close {
+  display: flex;
   margin-left: auto;
 }
 

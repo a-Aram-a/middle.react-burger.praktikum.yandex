@@ -39,12 +39,15 @@ export const IngredientCard = ({
       ref={drag}
       className={styles.card}
       style={{ opacity: isDragging ? 0.5 : 1 }}
+      data-testid={`ingredient-${ingredient._id}`}
       onClick={handleClick}
     >
       <div className={styles.image_wrapper}>
         <img className={styles.image} src={ingredient.image} alt={ingredient.name} />
         {count > 0 && (
-          <Counter count={count} size="default" extraClass={styles.counter} />
+          <span data-testid={`counter-${ingredient._id}`}>
+            <Counter count={count} size="default" extraClass={styles.counter} />
+          </span>
         )}
       </div>
       <div className={`${styles.price} mt-1 mb-1`}>
