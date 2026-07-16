@@ -37,6 +37,7 @@ export const createSocketMiddleware = (
 ): Middleware => {
   return (store: MiddlewareAPI) => {
     let socket: WebSocket | null = null;
+    let isActive = false;
     let isRefreshing = false;
     let retryCount = 0;
     let retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -78,7 +79,6 @@ export const createSocketMiddleware = (
       connectTimeoutId = setTimeout(() => {
         if (socket !== ws) return;
         ws.close();
-        scheduleRetry();
       }, CONNECT_TIMEOUT_MS);
 
       ws.onopen = (): void => {
@@ -98,7 +98,7 @@ export const createSocketMiddleware = (
         clearTimers();
         socket = null;
         store.dispatch(actions.onClose());
-        if (!isRefreshing) {
+        if (isActive && !isRefreshing) {
           scheduleRetry();
         }
       };
@@ -123,7 +123,7 @@ export const createSocketMiddleware = (
               .then((res) => {
                 setTokens(res.accessToken, res.refreshToken);
                 isRefreshing = false;
-                openSocket();
+                if (isActive) openSocket();
               })
               .catch(() => {
                 isRefreshing = false;
@@ -149,11 +149,14 @@ export const createSocketMiddleware = (
     return (next) => (action) => {
       if (actions.connect.match(action)) {
         clearTimers();
+        isActive = true;
         retryCount = 0;
         socket?.close();
         openSocket();
       } else if (actions.disconnect.match(action)) {
         clearTimers();
+        isActive = false;
+        isRefreshing = false;
         socket?.close();
         socket = null;
         store.dispatch(actions.onClose());
