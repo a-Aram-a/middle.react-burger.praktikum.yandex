@@ -8,7 +8,7 @@
 
 Приложение развёрнуто на GitHub Pages. Деплой автоматический: workflow
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) собирает проект и публикует
-`dist/` при каждом пуше в `main`.
+`dist/` при каждом пуше в `sprint6` или `main`.
 
 Так как приложение живёт не в корне домена, а в подпапке репозитория, в сборке заданы
 `base` (`vite.config.ts`) и `basename` у `BrowserRouter` (`src/main.tsx`). GitHub Pages не
