@@ -1,14 +1,22 @@
 import { logout } from '@store/auth/authActions';
 import { useAppDispatch } from '@store/index';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 import styles from './profile.module.css';
 
 const linkClass = ({ isActive }: { isActive: boolean }): string =>
   `${styles.menu_link} text text_type_main-medium ${isActive ? '' : 'text_color_inactive'}`;
 
+const HINT_TEXT: Record<'form' | 'orders', string> = {
+  form: 'В этом разделе вы можете изменить свои персональные данные',
+  orders: 'В этом разделе вы можете просмотреть свою историю заказов',
+};
+
 export const ProfilePage = (): React.JSX.Element => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const hint =
+    location.pathname === '/profile/orders' ? HINT_TEXT.orders : HINT_TEXT.form;
 
   const handleLogout = (): void => {
     void dispatch(logout());
@@ -33,7 +41,7 @@ export const ProfilePage = (): React.JSX.Element => {
         <p
           className={`${styles.hint} text text_type_main-default text_color_inactive mt-20`}
         >
-          В этом разделе вы можете изменить свои персональные данные
+          {hint}
         </p>
       </nav>
       <Outlet />

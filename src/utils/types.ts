@@ -36,3 +36,23 @@ export type TUpdateUserForm = {
   email: string;
   password: string;
 };
+
+export type TOrderStatus = 'created' | 'pending' | 'done';
+
+export type TOrder = {
+  _id: string;
+  ingredients: string[];
+  status: TOrderStatus;
+  number: number;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+};
+
+export type TOrdersWsMessage = {
+  success: boolean;
+  orders?: unknown;
+  total?: number;
+  totalToday?: number;
+  message?: string;
+};

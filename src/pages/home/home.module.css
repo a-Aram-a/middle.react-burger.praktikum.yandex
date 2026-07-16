@@ -1,8 +1,8 @@
 .title {
-  width: 100%;
-  max-width: 1260px;
-  margin-right: auto;
-  margin-left: auto;
+  align-self: center;
+  box-sizing: border-box;
+  width: 1280px;
+  max-width: 100%;
 }
 
 .main {

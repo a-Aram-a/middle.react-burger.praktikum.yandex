@@ -1,10 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 import { fetchIngredients } from './ingredientsActions';
 
 import type { TIngredient } from '@utils/types';
 
-type TIngredientsState = {
+export type TIngredientsState = {
   items: TIngredient[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
 };
@@ -32,3 +32,12 @@ export const ingredientsSlice = createSlice({
       });
   },
 });
+
+export const selectIngredientsById = createSelector(
+  (state: { ingredients: TIngredientsState }) => state.ingredients.items,
+  (items): Record<string, TIngredient> =>
+    items.reduce<Record<string, TIngredient>>((acc, item) => {
+      acc[item._id] = item;
+      return acc;
+    }, {})
+);

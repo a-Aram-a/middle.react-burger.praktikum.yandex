@@ -4,6 +4,9 @@ const REFRESH_TOKEN_KEY = 'refreshToken';
 export const getAccessToken = (): string | null =>
   localStorage.getItem(ACCESS_TOKEN_KEY);
 
+export const getRawAccessToken = (): string | null =>
+  getAccessToken()?.replace(/^Bearer\s+/i, '') ?? null;
+
 export const getRefreshToken = (): string | null =>
   localStorage.getItem(REFRESH_TOKEN_KEY);
 
