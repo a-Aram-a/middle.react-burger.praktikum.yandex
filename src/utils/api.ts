@@ -4,6 +4,7 @@ import { getAccessToken, getRefreshToken, setTokens } from './tokens';
 import type {
   TIngredient,
   TLoginForm,
+  TOrder,
   TRegisterForm,
   TUpdateUserForm,
   TUser,
@@ -40,7 +41,7 @@ const checkResponse = <T>(res: Response): Promise<T> => {
 const request = <T>(endpoint: string, options?: RequestInit): Promise<T> =>
   fetch(`${API_BASE_URL}${endpoint}`, options).then((res) => checkResponse<T>(res));
 
-const refreshToken = (): Promise<TRefreshResponse> =>
+export const refreshTokenApi = (): Promise<TRefreshResponse> =>
   request<TRefreshResponse>('/auth/token', {
     method: 'POST',
     headers: jsonHeaders,
@@ -56,7 +57,7 @@ const fetchWithRefresh = async <T>(
     return await checkResponse<T>(res);
   } catch (err) {
     if (err instanceof Error && err.message === 'jwt expired') {
-      const data = await refreshToken();
+      const data = await refreshTokenApi();
       setTokens(data.accessToken, data.refreshToken);
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
@@ -82,6 +83,9 @@ export const createOrder = (ingredientIds: string[]): Promise<number> =>
     headers: { ...jsonHeaders, authorization: getAccessToken() ?? '' },
     body: JSON.stringify({ ingredients: ingredientIds }),
   }).then((body) => body.order.number);
+
+export const getOrderApi = (id: string): Promise<TServerResponse<{ order: TOrder }>> =>
+  request<TServerResponse<{ order: TOrder }>>(`/orders/${id}`);
 
 export const registerApi = (form: TRegisterForm): Promise<TAuthResponse> =>
   request<TAuthResponse>('/auth/register', {
