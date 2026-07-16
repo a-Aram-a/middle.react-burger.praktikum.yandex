@@ -47,7 +47,7 @@ export const ConstructorItem = ({
   drag(drop(ref));
 
   return (
-    <li ref={ref} className={styles.filling_item}>
+    <li ref={ref} className={styles.filling_item} data-testid="constructor-filling">
       <DragIcon type="secondary" />
       <ConstructorElement
         text={ingredient.name}

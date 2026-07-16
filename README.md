@@ -1,22 +1,74 @@
-# Стартер на TypeScript для проекта Stellar Burger
+# Stellar Burgers
 
-## О типизации (спринт 4)
+Учебный проект Яндекс Практикума: конструктор бургеров на React + TypeScript + Redux Toolkit.
 
-Проект изначально написан на TypeScript: все компоненты, страницы, хранилище и
-утилитарные функции имеют расширения `.ts`/`.tsx` и строгую типизацию (в
-`tsconfig` включён `strict`). Типизация нигде не обходится через `any` или
-инлайновое отключение линтера.
+## Задеплоенное приложение
 
-Ключевые решения по типизации хранилища (`src/services/index.ts`):
+**https://a-Aram-a.github.io/middle.react-burger.praktikum.yandex/**
 
-- тип состояния выводится из корневого редьюсера через `ReturnType`:
-  `type RootState = ReturnType<typeof rootReducer>`;
-- тип диспетчера — `type AppDispatch = typeof store.dispatch`;
-- хуки `useDispatch` и `useSelector` типизированы методом `withTypes`
-  (`useAppDispatch`, `useAppSelector`).
+Приложение развёрнуто на GitHub Pages. Деплой автоматический: workflow
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) собирает проект и публикует
+`dist/` при каждом пуше в `sprint6` или `main`.
 
-Начальные состояния и слайсы типизированы, асинхронные экшены вынесены в
-отдельные файлы `*Actions.ts`.
+Так как приложение живёт не в корне домена, а в подпапке репозитория, в сборке заданы
+`base` (`vite.config.ts`) и `basename` у `BrowserRouter` (`src/main.tsx`). GitHub Pages не
+умеет отдавать `index.html` на произвольный путь, поэтому при сборке рядом с `index.html`
+кладётся его копия `404.html` — она возвращает управление роутеру, и прямые ссылки вида
+`/feed` или `/ingredients/:id` открываются корректно.
+
+> Бэкенд проекта доступен не из всех регионов. Если ингредиенты не загружаются, а лента
+> заказов пуста — проверьте доступ к `new-stellarburgers.education-services.ru`.
+
+## Запуск
+
+```bash
+npm ci
+npm run dev
+```
+
+## Тестирование
+
+### Юнит-тесты редьюсеров (Vitest)
+
+Тесты лежат рядом со слайсами (`src/services/**/*Slice.test.ts`) и покрывают все шесть
+редьюсеров: начальное состояние и каждый обработчик, включая селекторы конструктора и
+ингредиентов. Общие фикстуры — в `src/utils/test-fixtures.ts`.
+
+```bash
+npm test          # watch-режим
+npx vitest run    # одиночный прогон
+npm run test:ui   # интерфейс Vitest
+```
+
+### Интеграционные тесты (Playwright)
+
+`e2e/constructor.spec.ts` проверяет путь пользователя на странице «Конструктор»:
+перетаскивание ингредиентов, подсчёт цены и счётчиков, удаление начинки, работу модальных
+окон (крестик, оверлей, Escape) и создание заказа — от сборки бургера до номера заказа в
+модалке.
+
+Все запросы к API замоканы HAR-файлами из `e2e/har/` через `page.routeFromHAR`
+(`e2e/fixtures.ts`), поэтому тесты не зависят от доступности бэкенда и всегда
+детерминированы:
+
+- `api.har` — успешный сценарий: `GET /ingredients`, `GET /auth/user`, `POST /orders`;
+- `api-order-error.har` — ответ `500` на `POST /orders` для проверки ошибки; подключается
+  поверх основного HAR только в соответствующем тесте.
+
+Запросы вне HAR обрываются (`notFound: 'abort'`), так что незамоканный запрос сразу
+уронит тест, а не утечёт в сеть.
+
+Авторизация подставляется токеном в `localStorage`: страницы входа и регистрации
+намеренно не участвуют в сценарии создания заказа. Dev-сервер поднимается автоматически
+(`webServer` в `playwright.config.ts`).
+
+```bash
+npm run e2e       # прогон тестов
+npm run e2e:ui    # интерфейс Playwright
+```
+
+Тесты также запускаются в CI на каждый pull request —
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
 ## Процедура создания коммита с проверками
 
@@ -43,14 +95,34 @@
 
 Для создания коммита рекомендуется запускать команду `npm run commit`. Она позволяет обеспечить соответствие описаний коммитов [общепринятым соглашениям](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## О типизации (спринт 4)
+
+Проект изначально написан на TypeScript: все компоненты, страницы, хранилище и
+утилитарные функции имеют расширения `.ts`/`.tsx` и строгую типизацию (в
+`tsconfig` включён `strict`). Типизация нигде не обходится через `any` или
+инлайновое отключение линтера.
+
+Ключевые решения по типизации хранилища (`src/services/index.ts`):
+
+- тип состояния выводится из корневого редьюсера через `ReturnType`:
+  `type RootState = ReturnType<typeof rootReducer>`;
+- тип диспетчера — `type AppDispatch = typeof store.dispatch`;
+- хуки `useDispatch` и `useSelector` типизированы методом `withTypes`
+  (`useAppDispatch`, `useAppSelector`).
+
+Начальные состояния и слайсы типизированы, асинхронные экшены вынесены в
+отдельные файлы `*Actions.ts`.
+
+## Алиасы
+
 В проекте настроены алиасы (через `vite-tsconfig-paths`), которые можно использовать при импорте модулей:
 
-| Алиас | Путь |
-|---|---|
-| `@/*` | `src/*` |
+| Алиас           | Путь               |
+| --------------- | ------------------ |
+| `@/*`           | `src/*`            |
 | `@components/*` | `src/components/*` |
-| `@hooks/*` | `src/hooks/*` |
-| `@pages/*` | `src/pages/*` |
-| `@services/*` | `src/services/*` |
-| `@store/*` | `src/services/*` |
-| `@utils/*` | `src/utils/*` |
+| `@hooks/*`      | `src/hooks/*`      |
+| `@pages/*`      | `src/pages/*`      |
+| `@services/*`   | `src/services/*`   |
+| `@store/*`      | `src/services/*`   |
+| `@utils/*`      | `src/utils/*`      |
